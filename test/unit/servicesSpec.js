@@ -13,10 +13,11 @@ describe('a measurement repository', function() {
 
         beforeEach(function () {
             module(function($provide) {
-                $provide.value('$window', {
-                    localStorage: {
-                        removeItem : function(key) {}
-                    }
+                $provide.value('storage', {
+                    getItem : function(key) {
+                        return null;
+                    },
+                    setItem : function(key, data) {}
                 });
             });
         });
@@ -39,12 +40,13 @@ describe('a measurement repository', function() {
             ]);
         }));
 
-        it('will set local storage when data is added', inject(function(repo, $window) {
+        it('will set local storage when data is added', inject(function(repo, storage) {
+            // Set up
+            spyOn(storage, 'setItem');
             // Exercise
             repo.add(42);
             // Verify
-            var storedValue = $window.localStorage.measurements;
-            expect(storedValue).toEqual('[{"time":1,"value":42}]');
+            expect(storage.setItem).toHaveBeenCalledWith('measurements', '[{"time":1,"value":42}]');
         }));
     });
 
@@ -52,14 +54,15 @@ describe('a measurement repository', function() {
 
         beforeEach(function () {
             module(function($provide) {
-                $provide.value('$window', {
-                    localStorage: {
-                        measurements : [
+                $provide.value('storage', {
+                    getItem : function(key) {
+                        return [
                             { time: 1, value: 13 },
                             { time: 2, value: 42 }
-                        ],
-                        removeItem : function(key) {}
-                    }
+                        ];
+                    },
+                    setItem : function(key, data) {},
+                    removeItem : function(key) {}
                 });
             });
         });
@@ -86,12 +89,13 @@ describe('a measurement repository', function() {
             ]);
         }));
 
-        it('will update local storage when data is added', inject(function(repo, $window) {
+        it('will update local storage when data is added', inject(function(repo, storage) {
+            // Set up
+            spyOn(storage, 'setItem');
             // Exercise
             repo.add(53);
             // Verify
-            var storedValue = $window.localStorage.measurements;
-            expect(storedValue).toEqual('[{"time":1,"value":13},{"time":2,"value":42},{"time":3,"value":53}]');
+            expect(storage.setItem).toHaveBeenCalledWith('measurements', '[{"time":1,"value":13},{"time":2,"value":42},{"time":3,"value":53}]');
         }));
 
         it('will remove data', inject(function(repo) {
@@ -104,12 +108,13 @@ describe('a measurement repository', function() {
             ]);
         }));
 
-        it('will update local storage when data is removed', inject(function(repo, $window) {
+        it('will update local storage when data is removed', inject(function(repo, storage) {
+            // Set up
+            spyOn(storage, 'setItem');
             // Exercise
             repo.remove(0);
             // Verify
-            var storedValue = $window.localStorage.measurements;
-            expect(storedValue).toEqual('[{"time":2,"value":42}]');
+            expect(storage.setItem).toHaveBeenCalledWith('measurements', '[{"time":2,"value":42}]');
         }));
 
         it('will remove all data', inject(function(repo) {
@@ -121,14 +126,14 @@ describe('a measurement repository', function() {
             expect(measurements).toEqual([]);
         }));
 
-        it('will clear local storage when all data is removed', inject(function(repo, $window) {
+        it('will clear local storage when all data is removed', inject(function(repo, storage) {
             // Set up
-            spyOn($window.localStorage, 'removeItem');
+            spyOn(storage, 'removeItem');
             // Exercise
             repo.remove(1);
             repo.remove(0);
             // Verify
-            expect($window.localStorage.removeItem).toHaveBeenCalledWith('measurements');
+            expect(storage.removeItem).toHaveBeenCalledWith('measurements');
         }));
     });
 });

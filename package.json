@@ -19,6 +19,7 @@
     "karma-jasmine": "~0.1",
     "karma-coverage": "~0.1",
     "phantomjs": "~1.9.2",
-    "grunt-karma": "~0.6.2"
+    "grunt-karma": "~0.6.2",
+    "grunt-karma-coveralls": "~2.0.2"
   }
 }

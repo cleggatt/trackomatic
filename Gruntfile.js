@@ -30,6 +30,11 @@ module.exports = function(grunt) {
             unit: {
                 configFile: 'karma.conf.js'
             }
+        },
+        coveralls: {
+            options: {
+                coverage_dir: 'coverage'
+            }
         }
     });
 
@@ -38,6 +43,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-rename');
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-karma');
+    grunt.loadNpmTasks('grunt-karma-coveralls');
 
     // TODO Update bower task to treat dev dependencies differently
     grunt.registerTask('bower-custom', ['bower', 'clean:testLibs', 'rename:testLibs']);

@@ -1,2 +1,2 @@
-Track-o-matic [![Coverage Status](https://coveralls.io/repos/cleggatt/trackomatic/badge.png)](https://coveralls.io/r/cleggatt/trackomatic)
+Track-o-matic [![Build Status](https://secure.travis-ci.org/cleggatt/trackomatic.png)](http://travis-ci.org/cleggatt/trackomatic) [![Coverage Status](https://coveralls.io/repos/cleggatt/trackomatic/badge.png)](https://coveralls.io/r/cleggatt/trackomatic)
 =============

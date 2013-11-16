@@ -1,0 +1,19 @@
+{
+  "name": "trackomatic",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "dependencies": {
+    "angular": "1.0.8",
+    "lodash": "2.2.1",
+    "ng-google-chart": "https://github.com/cleggatt/angular-google-chart.git#a04d74f267112ef3482083958fe22ce3a4892935"
+  },
+  "exportsOverride": {
+    "lodash": {
+      "": "dist/lodash.js"
+    }
+  },
+  "devDependencies": {
+    "angular-mocks": "~1.0.8"
+  }
+}

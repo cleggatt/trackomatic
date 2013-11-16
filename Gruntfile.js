@@ -47,5 +47,6 @@ module.exports = function(grunt) {
 
     // TODO Update bower task to treat dev dependencies differently
     grunt.registerTask('bower-custom', ['bower', 'clean:testLibs', 'rename:testLibs']);
-    grunt.registerTask('default', ['bower-custom', 'karma'])
+    grunt.registerTask('travis', ['bower-custom', 'karma', 'coveralls']);
+    grunt.registerTask('default', ['bower-custom', 'karma']);
 };

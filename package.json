@@ -23,6 +23,6 @@
     "grunt-karma-coveralls": "~2.0.2"
   },
   "scripts": {
-        "test": "grunt default --verbose"
+        "test": "grunt travis --verbose"
   }
 }

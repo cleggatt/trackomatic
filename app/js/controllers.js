@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('trackomatic.controllers', ['trackomatic.services', 'googlechart']).
-controller('MeasurementCtrl', ['$scope', 'repo', function ($scope, repo) {
+controller('SingleMeasurementCtrl', ['$scope', 'repo', function ($scope, repo) {
 
     $scope.measurements = repo.measurements;
 
@@ -17,6 +17,11 @@ controller('MeasurementCtrl', ['$scope', 'repo', function ($scope, repo) {
     $scope.remove = function(index) {
        repo.remove(index);
     }
+}]).
+controller('AllMeasurementsCtrl', ['$scope', 'repo', function ($scope, repo) {
+
+    $scope.measurements = repo.measurements;
+
 }]).
 controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
 

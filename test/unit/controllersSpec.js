@@ -1,6 +1,6 @@
 'use strict';
 
-describe('MeasurementCtrl', function() {
+describe('SingleMeasurementCtrl', function() {
 
     var repo;
 
@@ -21,7 +21,7 @@ describe('MeasurementCtrl', function() {
     it('puts measurements from repo in scope', inject(function($rootScope, $controller) {
         // Set up
         var scope = $rootScope.$new(),
-            ctrl = $controller("MeasurementCtrl", { $scope: scope });
+            ctrl = $controller("SingleMeasurementCtrl", { $scope: scope });
         // Exercise
         var measurements = scope.measurements;
         // Verify
@@ -34,7 +34,7 @@ describe('MeasurementCtrl', function() {
     it('defines an add() function', inject(function($rootScope, $controller) {
         // Set up
         var scope = $rootScope.$new(),
-            ctrl = $controller("MeasurementCtrl", { $scope: scope });
+            ctrl = $controller("SingleMeasurementCtrl", { $scope: scope });
         // Exercise
         var fn = scope.add;
         // Verify
@@ -44,7 +44,7 @@ describe('MeasurementCtrl', function() {
     it('defines a remove() function', inject(function($rootScope, $controller) {
         // Set up
         var scope = $rootScope.$new(),
-            ctrl = $controller("MeasurementCtrl", { $scope: scope });
+            ctrl = $controller("SingleMeasurementCtrl", { $scope: scope });
         // Exercise
         var fn = scope.remove;
         // Verify
@@ -54,7 +54,7 @@ describe('MeasurementCtrl', function() {
     it('stores valueToAdd from scope when add() is called', inject(function($rootScope, $controller) {
         // Set up
         var scope = $rootScope.$new(),
-            ctrl = $controller("MeasurementCtrl", { $scope: scope });
+            ctrl = $controller("SingleMeasurementCtrl", { $scope: scope });
         // Exercise
         scope.valueToAdd = 42;
         scope.add();
@@ -65,7 +65,7 @@ describe('MeasurementCtrl', function() {
     it('ignores empty valueToAdd from scope when add is called', inject(function($rootScope, $controller) {
         // Set up
         var scope = $rootScope.$new(),
-            ctrl = $controller("MeasurementCtrl", { $scope: scope });
+            ctrl = $controller("SingleMeasurementCtrl", { $scope: scope });
         // Exercise
         scope.valueToAdd = '';
         scope.add();
@@ -76,7 +76,7 @@ describe('MeasurementCtrl', function() {
     it('clears valueToAdd in scope when add is called', inject(function($rootScope, $controller) {
         // Set up
         var scope = $rootScope.$new(),
-            ctrl = $controller("MeasurementCtrl", { $scope: scope });
+            ctrl = $controller("SingleMeasurementCtrl", { $scope: scope });
         // Exercise
         scope.valueToAdd = 42;
         scope.add();
@@ -87,11 +87,43 @@ describe('MeasurementCtrl', function() {
     it('removes value at passed index when remove() is called', inject(function($rootScope, $controller) {
         // Set up
         var scope = $rootScope.$new(),
-            ctrl = $controller("MeasurementCtrl", { $scope: scope });
+            ctrl = $controller("SingleMeasurementCtrl", { $scope: scope });
         // Exercise
         scope.remove(7);
         // Verify
         expect(repo.remove).toHaveBeenCalledWith(7);
+    }));
+});
+
+describe('AllMeasurementsCtrl', function() {
+
+    var repo;
+
+    beforeEach(module('trackomatic.controllers'));
+
+    beforeEach(function () {
+        module(function($provide) {
+            repo = jasmine.createSpyObj('measurement repo', ['add', 'remove']);
+            repo.measurements = [
+                { time: 1, value: 13 },
+                { time: 2, value: 42 }
+            ];
+
+            $provide.value('repo', repo);
+        });
+    });
+
+    it('puts measurements from repo in scope', inject(function($rootScope, $controller) {
+        // Set up
+        var scope = $rootScope.$new(),
+            ctrl = $controller("AllMeasurementsCtrl", { $scope: scope });
+        // Exercise
+        var measurements = scope.measurements;
+        // Verify
+        expect(measurements).toEqual([
+            { time: 1, value: 13 },
+            { time: 2, value: 42 }
+        ]);
     }));
 });
 

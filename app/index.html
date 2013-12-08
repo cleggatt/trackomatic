@@ -4,21 +4,52 @@
     <meta charset="utf-8">
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <title>Track-o-matic</title>
+    <style>
+        .show-grid {
+            margin-bottom: 15px;
+        }
+        .show-grid [class^="col-"] {
+            padding-top: 10px;
+            padding-bottom: 10px;
+            background-color: #eee;
+            border: 1px solid #ddd;
+            background-color: rgba(86,61,124,.15);
+            border: 1px solid rgba(86,61,124,.2);
+        }
+
+    </style>
 </head>
 <body>
-    <div ng-controller='MeasurementCtrl'>
-        <ul>
-            <li ng-repeat='m in measurements'>
-                {{m.time}}: {{m.value}}  <button ng-click='remove($index)' >X</button>
-            </li>
-        </ul>
-        <form ng-submit='add()'>
-            <input type='text' ng-model='valueToAdd'>
-            <input type='submit' value='add'>
-        </form>
-    </div>
-    <div ng-controller='ChartCtrl'>
-        <div google-chart chart="chart" style="{{chart.cssStyle}}" on-ready="onReady(chartWrapper)" />
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 col-md-push-9" ng-controller='SingleMeasurementCtrl'>
+                <ul class="list-unstyled">
+                    <li ng-repeat='m in measurements'>
+                        {{m.time}}: {{m.value}} <button type="button" class="btn btn-danger btn-xs" ng-click='remove($index)' >X</button>
+                    </li>
+                </ul>
+                <form role="form" class="form-inline" ng-submit='add()'>
+                    <div class="form-group">
+                        <input type='text' class="form-control" ng-model='valueToAdd'>
+                    </div>
+                    <input type='submit'  class="btn btn-primary" value='Add'>
+                </form>
+            </div>
+            <div class="col-md-9 col-md-pull-3" ng-controller='ChartCtrl'>
+                <div google-chart chart="chart" style="{{chart.cssStyle}}" on-ready="onReady(chartWrapper)" />
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <p>
+                <button type="button" class="btn btn-info" ng-click="showRawData = !showRawData" ng-init="showRawData=false">
+                    {{ showRawData ? 'Hide' : 'Show' }} raw data
+                </button><br/>
+            </p>
+            <div class="col-md-12" ng-controller='AllMeasurementsCtrl' ng-show="showRawData">
+                <pre class=".pre-scrollable">{{measurements}}</pre>
+            </div>
+        </div>
     </div>
 
     <script src="js/lib/angular/angular.js"></script>

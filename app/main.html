@@ -1,0 +1,25 @@
+<!doctype html>
+<html data-ng-csp data-ng-app="main" >
+<head>
+    <style type="text/css">
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        #sandbox {
+            position:absolute;
+            left: 0px;
+            width: 100%;
+            top: 0px;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <iframe id="sandbox" src="index.html"></iframe>
+    <script src="js/lib/angular/angular.js"></script>
+    <script src='js/lib/angular-chromeapp-util/general.js'></script>
+    <script src='js/lib/angular-chromeapp-util/storage.js'></script>
+    <script src='main.js'></script>
+</body>
+</html>

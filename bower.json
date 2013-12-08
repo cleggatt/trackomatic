@@ -6,11 +6,16 @@
   "dependencies": {
     "angular": "1.0.8",
     "lodash": "2.2.1",
-    "ng-google-chart": "https://github.com/cleggatt/angular-google-chart.git#a04d74f267112ef3482083958fe22ce3a4892935"
+    "jquery": "1.9.1",
+    "ng-google-chart": "https://github.com/cleggatt/angular-google-chart.git",
+    "angular-chromeapp-util": "https://github.com/cleggatt/angular-chromeapp-util.git"
   },
   "exportsOverride": {
     "lodash": {
       "": "dist/lodash.js"
+    },
+    "jquery": {
+      "": "jquery.min.js"
     }
   },
   "devDependencies": {

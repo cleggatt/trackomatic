@@ -6,7 +6,13 @@ factory('storage', ['$window', function ($window) {
 }]).
 factory('repo', ['clcStorage', function (storage) {
 
-    var repo = {};
+    var repo = {
+        // TODO Load from storage
+        ideal : {
+            minimum: 63,
+            maximum: 79
+        }
+    };
     repo.measurements = [];
     // TODO We should enter a loading state and ignore any mods that occur
     var measurements = storage.getItem('measurements', function (item) {

@@ -28,6 +28,7 @@
                         {{m.time}}: {{m.value}} <button type="button" class="btn btn-danger btn-xs" ng-click='remove($index)' >X</button>
                     </li>
                 </ul>
+                <!-- TODO Make the form less wide -->
                 <form role="form" class="form-inline" ng-submit='add()'>
                     <div class="form-group">
                         <input type='text' class="form-control" ng-model='valueToAdd'>
@@ -42,7 +43,7 @@
         <div class="clearfix"></div>
         <div class="row">
             <p>
-                <button type="button" class="btn btn-info" ng-click="showRawData = !showRawData" ng-init="showRawData=false">
+                <button type="button" class="btn btn-info" ng-init="showRawData=false" ng-click="showRawData=!showRawData" >
                     {{ showRawData ? 'Hide' : 'Show' }} raw data
                 </button><br/>
             </p>

@@ -139,6 +139,10 @@ describe('ChartCtrl', function() {
             repo.measurements = [
                 { time: 1, value: 13 }
             ];
+            repo.ideal = {
+                minimum: 10,
+                maximum: 20
+            };
 
             $provide.value('repo', repo);
         });
@@ -148,13 +152,55 @@ describe('ChartCtrl', function() {
         // Set up
         var scope = $rootScope.$new(),
             ctrl = $controller("ChartCtrl", { $scope: scope });
+        scope.$apply();
         // Exercise
         repo.measurements.push({ time: 2, value: 42 });
         scope.$apply();
         // Verify
         expect(scope.chart.data.rows).toEqual([
-            { c: [ {v: 1}, {v: 13} ] },
-            { c: [ {v: 2}, {v: 42} ] }
+            { c: [ {v: 1}, {v: 13}, {v: 10}, {v: 10} ] },
+            { c: [ {v: 2}, {v: 42}, {v: 10}, {v: 10}  ] }
+        ]);
+    }));
+
+    it('updates ideals when ideal min changes', inject(function($rootScope, $controller) {
+        // Set up
+        var scope = $rootScope.$new(),
+            ctrl = $controller("ChartCtrl", { $scope: scope });
+        scope.$apply();
+        // Exercise
+        repo.ideal.minimum = 7;
+        scope.$apply();
+        // Verify
+        expect(scope.chart.data.rows).toEqual([
+            { c: [ {v: 1}, {v: 13}, {v: 7}, {v: 13} ] }
+        ]);
+    }));
+
+    it('updates ideals when ideal max changes', inject(function($rootScope, $controller) {
+        // Set up
+        var scope = $rootScope.$new(),
+            ctrl = $controller("ChartCtrl", { $scope: scope });
+        scope.$apply();
+        // Exercise
+        repo.ideal.maximum = 25;
+        scope.$apply();
+        // Verify
+        expect(scope.chart.data.rows).toEqual([
+            { c: [ {v: 1}, {v: 13}, {v: 10}, {v: 15} ] }
+        ]);
+    }));
+
+    it('updates ideals when ideal object changes', inject(function($rootScope, $controller) {
+        // Set up
+        var scope = $rootScope.$new(),
+            ctrl = $controller("ChartCtrl", { $scope: scope });
+        // Exercise
+        repo.ideal= { minimum : 3, maximum: 30 };
+        scope.$apply();
+        // Verify
+        expect(scope.chart.data.rows).toEqual([
+            { c: [ {v: 1}, {v: 13}, {v: 3}, {v: 27} ] }
         ]);
     }));
 });

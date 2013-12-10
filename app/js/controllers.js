@@ -19,9 +19,7 @@ controller('SingleMeasurementCtrl', ['$scope', 'repo', function ($scope, repo) {
     }
 }]).
 controller('AllMeasurementsCtrl', ['$scope', 'repo', function ($scope, repo) {
-
     $scope.measurements = repo.measurements;
-
 }]).
 controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
 
@@ -30,14 +28,33 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
 
     $scope.measurements = repo.measurements;
     $scope.$watch('measurements', function() {
+        // The min/max series are stacked so the max line value needs to be the difference of max and min
+        var maxLine = repo.ideal.maximum - repo.ideal.minimum;
+
         // Just update the entire array and let the googlecharts API handle working out what the change was
         measurementsAsRows.length = 0;
         for (var i = 0; i < repo.measurements.length; i++) {
             var measurement = repo.measurements[i];
             measurementsAsRows.push({ c: [
                 {v: measurement.time},
-                {v: measurement.value}
+                {v: measurement.value},
+                // TODO Need to make these unselectable with no hover details
+                // TODO Deal with undefined minimum and maximum in which case we can ignore these here and let the
+                // later listener deal with them
+                {v: repo.ideal.minimum },
+                {v: maxLine }
             ] });
+        }
+    }, true);
+
+    $scope.ideal = repo.ideal;
+    $scope.$watch('ideal', function() {
+        // The min/max series are stacked so the max line value needs to be the difference of max and min
+        var maxLine = repo.ideal.maximum - repo.ideal.minimum;
+        // TODO Handle undefined min or max
+        for (var i = 0; i < measurementsAsRows.length; i++) {
+            measurementsAsRows[i].c[2].v = repo.ideal.minimum;
+            measurementsAsRows[i].c[3].v = maxLine;
         }
     }, true);
 
@@ -75,17 +92,39 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
                     "id": "value",
                     "label": "Value",
                     "type": "number"
+                },
+                // TODO Remove label when minimum is undefined
+                {
+                    "id": "ideal-min",
+                    "label": "Ideal min",
+                    "type": "number"
+                },
+                // TODO Remove label when maximum is undefined
+                {
+                    "id": "ideal-max",
+                    "label": "Ideal max",
+                    "type": "number"
                 }
             ],
             "rows": measurementsAsRows
         },
         "options": {
             seriesType: "line",
+            isStacked : true,
             series: {
-                0: { type: "line" }
+                0: { type: "line" },
+                1: { type: "area" },
+                2: { type: "area" }
             },
+            colors : ['#3366cc', '#dc3912', 'green'],
             "hAxis": {
-                "title": "Date"
+                "title": "Time"
+            },
+            // TODO This value should be set to ensure the lowest value is visible
+            "vAxis": {
+                "viewWindow":  {
+                    "min" : 70
+                }
             },
             animation:{
                 duration: 1000,

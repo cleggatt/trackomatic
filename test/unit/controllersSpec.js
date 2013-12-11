@@ -13,6 +13,10 @@ describe('SingleMeasurementCtrl', function() {
                 { time: 1, value: 13 },
                 { time: 2, value: 42 }
             ];
+            repo.ideal = {
+                minimum: 10,
+                maximum: 20
+            };
 
             $provide.value('repo', repo);
         });
@@ -29,6 +33,19 @@ describe('SingleMeasurementCtrl', function() {
             { time: 1, value: 13 },
             { time: 2, value: 42 }
         ]);
+    }));
+
+    it('puts ideals from repo in scope', inject(function($rootScope, $controller) {
+        // Set up
+        var scope = $rootScope.$new(),
+            ctrl = $controller("SingleMeasurementCtrl", { $scope: scope });
+        // Exercise
+        var ideal = scope.ideal;
+        // Verify
+        expect(ideal).toEqual({
+            minimum: 10,
+            maximum: 20
+        });
     }));
 
     it('defines an add() function', inject(function($rootScope, $controller) {
@@ -195,6 +212,7 @@ describe('ChartCtrl', function() {
         // Set up
         var scope = $rootScope.$new(),
             ctrl = $controller("ChartCtrl", { $scope: scope });
+        scope.$apply();
         // Exercise
         repo.ideal= { minimum : 3, maximum: 30 };
         scope.$apply();
@@ -203,4 +221,24 @@ describe('ChartCtrl', function() {
             { c: [ {v: 1}, {v: 13}, {v: 3}, {v: 27} ] }
         ]);
     }));
+
+    var newIdeals = [
+        { minimum : 50, maximum : 50 },
+        { minimum : 51, maximum : 50}
+    ];
+    _.each(newIdeals, function(newIdeal) {
+        it('ignores ideals when max is not greater than the minimum', inject(function($rootScope, $controller) {
+            // Set up
+            var scope = $rootScope.$new(),
+                ctrl = $controller("ChartCtrl", { $scope: scope });
+            scope.$apply();
+            // Exercise
+            repo.ideal= newIdeal;
+            scope.$apply();
+            // Verify
+            expect(scope.chart.data.rows).toEqual([
+                { c: [ {v: 1}, {v: 13}, {v: 10}, {v:10} ] }
+            ]);
+        }));
+    });
 });

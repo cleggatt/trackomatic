@@ -4,6 +4,7 @@ angular.module('trackomatic.controllers', ['trackomatic.services', 'googlechart'
 controller('SingleMeasurementCtrl', ['$scope', 'repo', function ($scope, repo) {
 
     $scope.measurements = repo.measurements;
+    $scope.ideal = repo.ideal;
 
     $scope.add = function() {
         // TODO Ensure value is numeric
@@ -17,6 +18,7 @@ controller('SingleMeasurementCtrl', ['$scope', 'repo', function ($scope, repo) {
     $scope.remove = function(index) {
        repo.remove(index);
     }
+
 }]).
 controller('AllMeasurementsCtrl', ['$scope', 'repo', function ($scope, repo) {
     $scope.measurements = repo.measurements;
@@ -26,8 +28,9 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
     var measurementsAsRows = [];
     var ourChartWrapper;
 
-    $scope.measurements = repo.measurements;
-    $scope.$watch('measurements', function() {
+    // TODO Should put this in the parent scope of all controllers?
+    $scope.repo = repo;
+    $scope.$watch('repo.measurements', function() {
         // The min/max series are stacked so the max line value needs to be the difference of max and min
         var maxLine = repo.ideal.maximum - repo.ideal.minimum;
 
@@ -46,15 +49,15 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
             ] });
         }
     }, true);
-
-    $scope.ideal = repo.ideal;
-    $scope.$watch('ideal', function() {
-        // The min/max series are stacked so the max line value needs to be the difference of max and min
-        var maxLine = repo.ideal.maximum - repo.ideal.minimum;
-        // TODO Handle undefined min or max
-        for (var i = 0; i < measurementsAsRows.length; i++) {
-            measurementsAsRows[i].c[2].v = repo.ideal.minimum;
-            measurementsAsRows[i].c[3].v = maxLine;
+    $scope.$watch('repo.ideal', function() {
+        if (repo.ideal.maximum > repo.ideal.minimum) {
+            // The min/max series are stacked so the max line value needs to be the difference of max and min
+            var maxLine = repo.ideal.maximum - repo.ideal.minimum;
+            // TODO Handle undefined min or max
+            for (var i = 0; i < measurementsAsRows.length; i++) {
+                measurementsAsRows[i].c[2].v = repo.ideal.minimum;
+                measurementsAsRows[i].c[3].v = maxLine;
+            }
         }
     }, true);
 

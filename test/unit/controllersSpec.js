@@ -222,22 +222,22 @@ describe('ChartCtrl', function() {
         ]);
     }));
 
-    var newIdeals = [
-        { minimum : 50, maximum : 50 },
-        { minimum : 51, maximum : 50}
-    ];
-    _.each(newIdeals, function(newIdeal) {
+    _.each([
+        { ideals : { minimum : 50, maximum : 50 }, expectedMinimum: 10, expectedMaximum: 10 },
+        { ideals : { minimum : 51, maximum : 50 }, expectedMinimum: 10, expectedMaximum: 10 },
+        { ideals : { minimum : 50, maximum : 51 }, expectedMinimum: 50, expectedMaximum: 1 }
+    ], function(testData) {
         it('ignores ideals when max is not greater than the minimum', inject(function($rootScope, $controller) {
             // Set up
             var scope = $rootScope.$new(),
                 ctrl = $controller("ChartCtrl", { $scope: scope });
             scope.$apply();
             // Exercise
-            repo.ideal= newIdeal;
+            repo.ideal= testData.ideals;
             scope.$apply();
             // Verify
             expect(scope.chart.data.rows).toEqual([
-                { c: [ {v: 1}, {v: 13}, {v: 10}, {v:10} ] }
+                { c: [ {v: 1}, {v: 13}, {v: testData.expectedMinimum}, {v: testData.expectedMaximum} ] }
             ]);
         }));
     });

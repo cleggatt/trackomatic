@@ -37,18 +37,25 @@
                         </div>
                     </div>
                 </form>
-                <ul class="list-unstyled">
-                    <li ng-repeat='m in measurements'>
-                        {{m.time}}: {{m.value}} <button type="button" class="btn btn-danger btn-xs" ng-click='remove($index)' >X</button>
-                    </li>
-                </ul>
-                <!-- TODO Make the form less wide -->
-                <form role="form" class="form-inline" ng-submit='add()'>
-                    <div class="form-group">
-                        <input type='text' class="form-control" ng-model='valueToAdd'>
-                    </div>
-                    <input type='submit'  class="btn btn-primary" value='Add'>
-                </form>
+                <div ng-show="showDataEntry" >
+                    <ul class="list-unstyled">
+                        <li ng-repeat='m in measurements'>
+                            {{m.time}}: {{m.value}} <button type="button" class="btn btn-danger btn-xs" ng-click='remove($index)' >X</button>
+                        </li>
+                    </ul>
+                    <!-- TODO Make the form less wide -->
+                    <form role="form" class="form-inline" ng-submit='add()'>
+                        <div class="form-group">
+                            <input type='text' class="form-control" ng-model='valueToAdd'>
+                        </div>
+                        <input type='submit'  class="btn btn-primary" value='Add'>
+                    </form>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-info" ng-init="showDataEntry=false" ng-click="showDataEntry=!showDataEntry" >
+                        {{ showDataEntry ? 'Hide' : 'Show' }} data entry
+                    </button><br/>
+                </div>
             </div>
             <div class="col-md-9 col-md-pull-3" ng-controller='ChartCtrl'>
                 <div google-chart chart="chart" style="{{chart.cssStyle}}" on-ready="onReady(chartWrapper)" />
@@ -56,11 +63,11 @@
         </div>
         <div class="clearfix"></div>
         <div class="row">
-            <p>
+            <div>
                 <button type="button" class="btn btn-info" ng-init="showRawData=false" ng-click="showRawData=!showRawData" >
                     {{ showRawData ? 'Hide' : 'Show' }} raw data
                 </button><br/>
-            </p>
+            </div>
             <div class="col-md-12" ng-controller='AllMeasurementsCtrl' ng-show="showRawData">
                 <pre class=".pre-scrollable">{{measurements}}</pre>
             </div>

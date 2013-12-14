@@ -31,9 +31,6 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
     // TODO Should put this in the parent scope of all controllers?
     $scope.repo = repo;
     $scope.$watch('repo.measurements', function() {
-        // The min/max series are stacked so the max line value needs to be the difference of max and min
-        var maxLine = repo.ideal.maximum - repo.ideal.minimum;
-
         // Just update the entire array and let the googlecharts API handle working out what the change was
         measurementsAsRows.length = 0;
         for (var i = 0; i < repo.measurements.length; i++) {
@@ -41,24 +38,22 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
             measurementsAsRows.push({ c: [
                 {v: measurement.time},
                 {v: measurement.value},
-                // TODO Need to make these unselectable with no hover details
-                // TODO Deal with undefined minimum and maximum in which case we can ignore these here and let the
-                // later listener deal with them
-                {v: repo.ideal.minimum },
-                {v: maxLine }
+                {v: null },
+                {v: null }
             ] });
         }
     }, true);
     $scope.$watch('repo.ideal', function() {
-        if (repo.ideal.maximum > repo.ideal.minimum) {
+       if (repo.ideal.maximum > repo.ideal.minimum) {
             // The min/max series are stacked so the max line value needs to be the difference of max and min
             var maxLine = repo.ideal.maximum - repo.ideal.minimum;
             // TODO Handle undefined min or max
             for (var i = 0; i < measurementsAsRows.length; i++) {
+                // TODO Need to make these unselectable with no hover details
                 measurementsAsRows[i].c[2].v = repo.ideal.minimum;
                 measurementsAsRows[i].c[3].v = maxLine;
             }
-        }
+       }
     }, true);
 
     $scope.onReady = function(chartwrapper) {
@@ -67,6 +62,7 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
             id: 'remove',
             text: 'Remove',
             action: function() {
+                // TODO If we can't make the ideal lines unselectable, ignore here
                 var selections = ourChartWrapper.getChart().getSelection();
                 if (selections.length) {
                     var selection = selections[0];
@@ -126,7 +122,7 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
             // TODO This value should be set to ensure the lowest value is visible
             "vAxis": {
                 "viewWindow":  {
-                    "min" : 70
+                    "min" : 60
                 }
             },
             animation:{

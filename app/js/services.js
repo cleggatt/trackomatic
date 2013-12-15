@@ -6,16 +6,11 @@ factory('storage', ['$window', function ($window) {
 }]).
 factory('repo', ['clcStorage', function (storage) {
 
-    var repo = {
-        // TODO Load from storage
-        ideal : {
-            minimum: 63,
-            maximum: 79
-        }
-    };
+    var repo = {};
+
     repo.measurements = [];
     // TODO We should enter a loading state and ignore any mods that occur
-    var measurements = storage.getItem('measurements', function (item) {
+    storage.getItem('measurements', function (item) {
         if (item) {
             // TODO Store version information for upgrades
             var measurements = angular.fromJson(item);
@@ -44,6 +39,68 @@ factory('repo', ['clcStorage', function (storage) {
             storage.setItem('measurements', angular.toJson(this.measurements));
         }
     }
+
+    var _min;
+    var _max;
+    var _ideal = {};
+
+    Object.defineProperty(_ideal, "minimum", {
+        get: function() {
+            return _min;
+        },
+        set: function(min) {
+            _min = min;
+
+            if (_min)  {
+                storage.setItem('min', _min);
+            }
+            else {
+                storage.removeItem('min');
+            }
+        },
+        configurable : false,
+        enumerable : true
+    });
+    Object.defineProperty(_ideal, "maximum", {
+        get: function() {
+            return _max;
+        },
+        set: function(max) {
+            _max = max;
+            if (_max)  {
+                storage.setItem('max', _max);
+            }
+            else {
+                storage.removeItem('max');
+            }
+        },
+        configurable : false,
+        enumerable : true
+    });
+    Object.defineProperty(repo, "ideal", {
+        get: function() {
+            return _ideal;
+        },
+        set: function(ideal) {
+            _ideal.minimum = ideal.minimum;
+            _ideal.maximum = ideal.maximum;
+        },
+        configurable : false,
+        enumerable : true
+    });
+
+    storage.getItem('min', function (item) {
+       console.log
+       if (item) {
+            _min = parseInt(item);
+       }
+    });
+    var _max;
+    storage.getItem('max', function (item) {
+       if (item) {
+            _max = parseInt(item);
+       }
+    });
 
     return repo;
 }]);

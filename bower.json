@@ -7,7 +7,7 @@
     "angular": "1.2.4",
     "lodash": "2.2.1",
     "jquery": "1.9.1",
-    "ng-google-chart": "https://github.com/bouil/angular-google-chart.git#a992b484170839f6c4c392bc57e369c08e6272a1",
+    "ng-google-chart": "git://github.com/bouil/angular-google-chart.git#0.0.6",
     "angular-chromeapp-util": "https://github.com/cleggatt/angular-chromeapp-util.git"
   },
   "exportsOverride": {

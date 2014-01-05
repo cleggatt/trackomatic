@@ -7,10 +7,12 @@ controller('SingleMeasurementCtrl', ['$scope', 'repo', function ($scope, repo) {
     $scope.ideal = repo.ideal;
 
     $scope.add = function() {
-        // TODO Ensure value is numeric
-        if ($scope.valueToAdd) {
-            repo.add($scope.valueToAdd);
+        // TODO Validate that value is numeric
+        var value = $scope.valueToAdd.trim();
+        if (value) {
+            value = parseInt(value);
         }
+        repo.add(value);
 
         $scope.valueToAdd = '';
     };
@@ -35,9 +37,16 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
         measurementsAsRows.length = 0;
         for (var i = 0; i < repo.measurements.length; i++) {
             var measurement = repo.measurements[i];
+
+            // TODO Handle multiple nulls in a row
+            var value = measurement.value;
+            if (value == null && i > 0 && i < repo.measurements.length - 1) {
+                value = (repo.measurements[i - 1].value + repo.measurements[i + 1].value) / 2;
+            }
+
             measurementsAsRows.push({ c: [
                 {v: measurement.time},
-                {v: measurement.value},
+                {v: value},
                 {v: null },
                 {v: null }
             ] });

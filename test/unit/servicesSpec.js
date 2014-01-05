@@ -338,4 +338,44 @@ describe('a measurement repository', function() {
             expect(storage.setItem).toHaveBeenCalledWith('max', 55);
         }]));
     });
+
+    describe('adding data to a repository', function () {
+
+        beforeEach(function () {
+            module(function($provide) {
+                // TODO Use a Jasmine spy object to avoid the need call "spyOn"
+                // TODO Move this to a single factory method for use by all tests
+                $provide.value('clcStorage', {
+                    getItem : function(key, callback) {},
+                    setItem : function(key, data) {},
+                    removeItem : function(key) {}
+                });
+            });
+        });
+
+        afterEach(inject(['repo', function(repo) {
+            repo.remove(0);
+        }]));
+
+        _.each([ undefined, null, ''], function(value) {
+            it('will store empty values as null', inject(['repo', function(repo) {
+                // Exercise
+                repo.add(value);
+                // Verify
+                var measurements = repo.measurements;
+                expect(measurements).toEqual([
+                    {time: 1, value: null}
+                ]);
+            }]));
+
+            it('will set local storage when data is added', inject(['repo', 'clcStorage', function(repo, storage) {
+                // Set up
+                spyOn(storage, 'setItem');
+                // Exercise
+                repo.add(value);
+                // Verify
+                expect(storage.setItem).toHaveBeenCalledWith('measurements', '[{"time":1,"value":null}]');
+            }]));
+        });
+    });
 });

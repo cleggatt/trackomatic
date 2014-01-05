@@ -2,6 +2,7 @@
 
 describe('SingleMeasurementCtrl', function() {
 
+    // TODO Inject into tests
     var repo;
 
     beforeEach(module('trackomatic.controllers'));
@@ -73,21 +74,21 @@ describe('SingleMeasurementCtrl', function() {
         var scope = $rootScope.$new(),
             ctrl = $controller("SingleMeasurementCtrl", { $scope: scope });
         // Exercise
-        scope.valueToAdd = 42;
+        scope.valueToAdd = '42';
         scope.add();
         // Verify
         expect(repo.add).toHaveBeenCalledWith(42);
     }));
 
-    it('ignores empty valueToAdd from scope when add is called', inject(function($rootScope, $controller) {
+    it('trims blank valueToAdd from scope when add is called', inject(function($rootScope, $controller) {
         // Set up
         var scope = $rootScope.$new(),
             ctrl = $controller("SingleMeasurementCtrl", { $scope: scope });
         // Exercise
-        scope.valueToAdd = '';
+        scope.valueToAdd = '   ';
         scope.add();
         // Verify
-        expect(repo.add).not.toHaveBeenCalled();
+        expect(repo.add).toHaveBeenCalledWith('');
     }));
 
     it('clears valueToAdd in scope when add is called', inject(function($rootScope, $controller) {
@@ -95,7 +96,7 @@ describe('SingleMeasurementCtrl', function() {
         var scope = $rootScope.$new(),
             ctrl = $controller("SingleMeasurementCtrl", { $scope: scope });
         // Exercise
-        scope.valueToAdd = 42;
+        scope.valueToAdd = '42';
         scope.add();
         // Verify
         expect(scope.valueToAdd).toEqual('');
@@ -114,6 +115,7 @@ describe('SingleMeasurementCtrl', function() {
 
 describe('AllMeasurementsCtrl', function() {
 
+    // TODO Inject into tests
     var repo;
 
     beforeEach(module('trackomatic.controllers'));
@@ -146,13 +148,11 @@ describe('AllMeasurementsCtrl', function() {
 
 describe('ChartCtrl', function() {
 
-    var repo;
-
     beforeEach(module('trackomatic.controllers'));
 
     beforeEach(function () {
         module(function($provide) {
-            repo = jasmine.createSpyObj('measurement repo', ['add', 'remove']);
+            var repo = jasmine.createSpyObj('measurement repo', ['add', 'remove']);
             repo.measurements = [
                 { time: 1, value: 13 }
             ];
@@ -165,7 +165,7 @@ describe('ChartCtrl', function() {
         });
     });
 
-    it('updates measurementsAsRows primary values when repo measurements change', inject(function($rootScope, $controller) {
+    it('updates measurementsAsRows primary values when repo measurements change', inject(function($rootScope, $controller, repo) {
         // Set up
         var scope = $rootScope.$new(),
             ctrl = $controller("ChartCtrl", { $scope: scope });
@@ -180,7 +180,7 @@ describe('ChartCtrl', function() {
         ]);
     }));
 
-    it('updates ideals when ideal min changes', inject(function($rootScope, $controller) {
+    it('updates ideals when ideal min changes', inject(function($rootScope, $controller, repo) {
         // Set up
         var scope = $rootScope.$new(),
             ctrl = $controller("ChartCtrl", { $scope: scope });
@@ -194,7 +194,7 @@ describe('ChartCtrl', function() {
         ]);
     }));
 
-    it('updates ideals when ideal max changes', inject(function($rootScope, $controller) {
+    it('updates ideals when ideal max changes', inject(function($rootScope, $controller, repo) {
         // Set up
         var scope = $rootScope.$new(),
             ctrl = $controller("ChartCtrl", { $scope: scope });
@@ -208,7 +208,7 @@ describe('ChartCtrl', function() {
         ]);
     }));
 
-    it('updates ideals when ideal object changes', inject(function($rootScope, $controller) {
+    it('updates ideals when ideal object changes', inject(function($rootScope, $controller, repo) {
         // Set up
         var scope = $rootScope.$new(),
             ctrl = $controller("ChartCtrl", { $scope: scope });
@@ -227,7 +227,7 @@ describe('ChartCtrl', function() {
         { ideals : { minimum : 51, maximum : 50 }, expectedMinimum: 10, expectedMaximum: 10 },
         { ideals : { minimum : 50, maximum : 51 }, expectedMinimum: 50, expectedMaximum: 1 }
     ], function(testData) {
-        it('ignores ideals when max is not greater than the minimum', inject(function($rootScope, $controller) {
+        it('ignores ideals when max is not greater than the minimum', inject(function($rootScope, $controller, repo) {
             // Set up
             var scope = $rootScope.$new(),
                 ctrl = $controller("ChartCtrl", { $scope: scope });
@@ -239,6 +239,30 @@ describe('ChartCtrl', function() {
             expect(scope.chart.data.rows).toEqual([
                 { c: [ {v: 1}, {v: 13}, {v: testData.expectedMinimum}, {v: testData.expectedMaximum} ] }
             ]);
+        }));
+    });
+
+    _.each([
+        { actual : [10, null, 20], expected :[10, 15, 20] },
+        { actual : [null, 10, 20], expected :[null, 10, 20] },
+        { actual : [10, 20, null], expected :[10, 20, null] }
+    ], function(data) {
+        it('replaces null values with an average', inject(function($rootScope, $controller, repo) {
+            // Set up
+            var scope = $rootScope.$new(),
+                ctrl = $controller("ChartCtrl", { $scope: scope });
+            // Exercise
+            repo.measurements.length = 0;
+            _.each(data.actual, function(value, idx) {
+                repo.measurements.push({ time: idx + 1, value: value });
+            });
+            scope.$apply();
+            // Verify
+            var expected = [];
+            _.each(data.expected, function(value, idx) {
+                expected.push({ c: [ {v:  idx + 1}, {v: value}, {v: 10}, {v: 10} ] });
+            });
+            expect(scope.chart.data.rows).toEqual(expected);
         }));
     });
 });

@@ -23,8 +23,11 @@ factory('repo', ['clcStorage', function (storage) {
     });
 
     repo.add = function(value) {
+        // TODO Validate that value is numeric
         var time = this.measurements.length + 1;
-        this.measurements[this.measurements.length] = {time: time, value: value};
+        var valueToStore = value ? value : null;
+
+        this.measurements[this.measurements.length] = {time: time, value: valueToStore};
 
         storage.setItem('measurements', angular.toJson(this.measurements));
     }

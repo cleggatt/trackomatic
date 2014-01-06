@@ -165,7 +165,7 @@ describe('ChartCtrl', function() {
         });
     });
 
-    it('updates measurementsAsRows primary values when repo measurements change', inject(function($rootScope, $controller, repo) {
+    it('updates measurementsAsRows values when repo measurements change', inject(function($rootScope, $controller, repo) {
         // Set up
         var scope = $rootScope.$new(),
             ctrl = $controller("ChartCtrl", { $scope: scope });
@@ -175,8 +175,8 @@ describe('ChartCtrl', function() {
         scope.$apply();
         // Verify
         expect(scope.chart.data.rows).toEqual([
-            { c: [ {v: 1}, {v: 13}, {v: null}, {v: null} ] },
-            { c: [ {v: 2}, {v: 42}, {v: null}, {v: null}  ] }
+            { c: [ {v: 1}, {v: 13}, {v: 10}, {v: 10} ] },
+            { c: [ {v: 2}, {v: 42}, {v: 10}, {v: 10}  ] }
         ]);
     }));
 

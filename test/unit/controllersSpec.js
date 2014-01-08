@@ -69,27 +69,25 @@ describe('SingleMeasurementCtrl', function() {
         expect(fn).toBeDefined();
     }));
 
-    it('stores valueToAdd from scope when add() is called', inject(function($rootScope, $controller) {
-        // Set up
-        var scope = $rootScope.$new(),
-            ctrl = $controller("SingleMeasurementCtrl", { $scope: scope });
-        // Exercise
-        scope.valueToAdd = '42';
-        scope.add();
-        // Verify
-        expect(repo.add).toHaveBeenCalledWith(42);
-    }));
-
-    it('trims blank valueToAdd from scope when add is called', inject(function($rootScope, $controller) {
-        // Set up
-        var scope = $rootScope.$new(),
-            ctrl = $controller("SingleMeasurementCtrl", { $scope: scope });
-        // Exercise
-        scope.valueToAdd = '   ';
-        scope.add();
-        // Verify
-        expect(repo.add).toHaveBeenCalledWith('');
-    }));
+    _.each([ { scope: 42, expected: 42 },
+             { scope: '42', expected: 42 },
+             { scope: ' 42 ', expected: 42 },
+             { scope: NaN, expected: undefined },
+             { scope: '  ', expected: undefined },
+             { scope: '', expected: undefined },
+             { scope: null, expected: undefined },
+             { scope: undefined, expected: undefined} ], function(data) {
+        it('stores valueToAdd from scope when add() is called', inject(function($rootScope, $controller) {
+            // Set up
+            var scope = $rootScope.$new(),
+                ctrl = $controller("SingleMeasurementCtrl", { $scope: scope });
+            // Exercise
+            scope.valueToAdd = data.scope;
+            scope.add();
+            // Verify
+            expect(repo.add).toHaveBeenCalledWith(data.expected);
+        }));
+    });
 
     it('clears valueToAdd in scope when add is called', inject(function($rootScope, $controller) {
         // Set up

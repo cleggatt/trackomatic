@@ -7,10 +7,11 @@ controller('SingleMeasurementCtrl', ['$scope', 'repo', function ($scope, repo) {
     $scope.ideal = repo.ideal;
 
     $scope.add = function() {
-        // TODO Validate that value is numeric
-        var value = $scope.valueToAdd.trim();
-        if (value) {
-            value = parseInt(value);
+
+        var value = parseInt($scope.valueToAdd);
+        if (_.isNaN(value)) {
+            // TODO Present validation error if caused by invalid format/value
+            value = undefined;
         }
         repo.add(value);
 

@@ -377,5 +377,33 @@ describe('a measurement repository', function() {
                 expect(storage.setItem).toHaveBeenCalledWith('measurements', '[{"time":1,"value":null}]');
             }]));
         });
+
+        _.each([ { value: 42, expected: 42 },
+                 { value: '42', expected: 42 },
+                 { value: ' 42 ', expected: 42 },
+                 { value: '  ', expected: null },
+                 { value: '', expected: null },
+                 { value: null, expected: null },
+                 { value: undefined, expected: null }], function(data) {
+            it('will translate values', inject(['repo', function(repo) {
+                // Exercise
+                repo.add(data.value);
+                // Verify
+                var measurements = repo.measurements;
+                expect(measurements).toEqual([
+                    {time: 1, value: data.expected}
+                ]);
+            }]));
+
+            it('will set local storage when data is added', inject(['repo', 'clcStorage', function(repo, storage) {
+                // Set up
+                spyOn(storage, 'setItem');
+                // Exercise
+                repo.add(data.value);
+                // Verify
+                var valueAsString = String(data.expected);
+                expect(storage.setItem).toHaveBeenCalledWith('measurements', '[{"time":1,"value":' + valueAsString + '}]');
+            }]));
+        });
     });
 });

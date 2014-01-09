@@ -24,8 +24,12 @@ factory('repo', ['clcStorage', function (storage) {
 
     repo.add = function(value) {
         // TODO Validate that value is numeric
+        var valueToStore = parseInt(value);
+        if (!valueToStore) {
+            valueToStore = null;
+        }
+
         var time = this.measurements.length + 1;
-        var valueToStore = value ? value : null;
 
         this.measurements[this.measurements.length] = {time: time, value: valueToStore};
 

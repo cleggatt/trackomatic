@@ -178,7 +178,7 @@ describe('ChartCtrl', function() {
         ]);
     }));
 
-    it('updates ideals when ideal min changes', inject(function($rootScope, $controller, repo) {
+    it('updates ideals only when ideal min changes', inject(function($rootScope, $controller, repo) {
         // Set up
         var scope = $rootScope.$new(),
             ctrl = $controller("ChartCtrl", { $scope: scope });
@@ -192,7 +192,7 @@ describe('ChartCtrl', function() {
         ]);
     }));
 
-    it('updates ideals when ideal max changes', inject(function($rootScope, $controller, repo) {
+    it('updates ideals only when ideal max changes', inject(function($rootScope, $controller, repo) {
         // Set up
         var scope = $rootScope.$new(),
             ctrl = $controller("ChartCtrl", { $scope: scope });

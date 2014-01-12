@@ -28,6 +28,54 @@ controller('AllMeasurementsCtrl', ['$scope', 'repo', function ($scope, repo) {
 }]).
 controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
 
+    var addMeasurement = function(measurementsAsRows, time, value, minLine, maxLine) {
+        measurementsAsRows.push({ c: [
+            {v: time},
+            {v: value },
+            // TODO Handle undefined min
+            // TODO Need to make min unselectable with no hover details
+            {v: minLine },
+            // TODO Handle undefined max
+            // TODO Need to make max unselectable with no hover details
+            {v: maxLine }
+        ] });
+    };
+
+    /**
+     * Returns the index within measurements of the first entry that has a non-null value, starting the search at the
+     * specified index.
+     *
+     * @param measurements The array to search
+     * @param {number} startIndex The index to start the search from
+     * @returns {number} the index of the first occurrence of an entry that has a non-null value, or measurements.length
+     *      if such an entry cannot be found
+     */
+    var findNextValueIndex = function(measurements, startIndex) {
+        var end = (startIndex < 0) ? 0 : startIndex;
+        for (; end < measurements.length; end++) {
+            if (measurements[end].value != null) {
+                return end;
+            }
+        }
+        return end;
+    }
+
+    /**
+     * Returns the corresponding increment along the Y-axis for an increment of 1.0 on the X-axis, to interpolate
+     * points between p1 and p2 (in a straight line).
+     *
+     * @param measurements The array of measurement value
+     * @param p1 The leftmost point
+     * @param p2 The rightmost point
+     * @returns {number} the corresponding increment along the Y-axis for an increment of 1.0 on the X-axis
+     */
+    var calculateIncrement = function(measurements, p1, p2) {
+        var difference = measurements[p2].value - measurements[p1].value;
+        var gap = p2 - p1;
+        var increment = difference / gap;
+        return increment;
+    }
+
     var measurementsAsRows = [];
     var ourChartWrapper;
 
@@ -37,29 +85,39 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
         // TODO Handle undefined min or max
         // The min/max series are stacked so the max line value needs to be the difference of max and min
         var maxLine = repo.ideal.maximum - repo.ideal.minimum;
-
+        var measurements = repo.measurements;
+        // Have we encountered a non-null data value, and do we have non-null data values left.
+        var processing = false;
         // Just update the entire array and let the googlecharts API handle working out what the change was
         measurementsAsRows.length = 0;
-        for (var i = 0; i < repo.measurements.length; i++) {
-            var measurement = repo.measurements[i];
-
-            // TODO Handle multiple nulls in a row
-            var value = measurement.value;
-            if (value == null && i > 0 && i < repo.measurements.length - 1) {
-                // TODO Need to make these unselectable with no hover details
-                value = (repo.measurements[i - 1].value + repo.measurements[i + 1].value) / 2;
+        for (var idx = 0; idx < measurements.length; idx++) {
+            var measurement = measurements[idx];
+            if (processing) {
+                if (measurement.value == null) {
+                    // Attempt to find the 2 points to use as the basis of our interpolation. Note, idx will never be 0 here
+                    var p1 = idx - 1;
+                    var p2 = findNextValueIndex(measurements, p1 + 1);
+                    // If we can't find a second point, we have run out of data
+                    if (p2 == measurements.length) {
+                        processing = false;
+                    } else {
+                        var base = measurements[p1].value;
+                        // TODO We're assuming all points are equally spaced. We should use the time value as X, not idx
+                        // when determining the Y value
+                        var increment = calculateIncrement(measurements, p1, p2);
+                        for (var interpolated = base + increment; idx < p2; interpolated += increment, idx++) {
+                            // TODO Need to make these unselectable with no hover detail
+                            addMeasurement(measurementsAsRows, measurements[idx].time, interpolated, repo.ideal.minimum, maxLine);
+                        }
+                        // Rollback index by one as outer loop will increment it
+                        idx = idx - 1;
+                        continue;
+                    }
+                }
+            } else if (measurement.value != null) {
+                processing = true;
             }
-
-            measurementsAsRows.push({ c: [
-                {v: measurement.time},
-                {v: value},
-                // TODO Handle undefined min
-                // TODO Need to make min unselectable with no hover details
-                {v: repo.ideal.minimum },
-                // TODO Handle undefined max
-                // TODO Need to make max unselectable with no hover details
-                {v: maxLine }
-            ] });
+            addMeasurement(measurementsAsRows, measurement.time, measurement.value, repo.ideal.minimum, maxLine);
         }
     },true);
     $scope.$watch('repo.ideal', function() {

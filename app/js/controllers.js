@@ -101,9 +101,9 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
                     if (p2 == measurements.length) {
                         processing = false;
                     } else {
+                        // Since we're assuming regular sampling, we use idx as the X value for interpolation. If we
+                        // were plotting time as X, we wouldn't need interpolation
                         var base = measurements[p1].value;
-                        // TODO We're assuming all points are equally spaced. We should use the time value as X, not idx
-                        // when determining the Y value
                         var increment = calculateIncrement(measurements, p1, p2);
                         for (var interpolated = base + increment; idx < p2; interpolated += increment, idx++) {
                             // TODO Need to make these unselectable with no hover detail

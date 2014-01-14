@@ -247,15 +247,15 @@ describe('ChartCtrl', function() {
         // Start of a sequence, can't calculate line of best fit
         { actual : [null, 15], expected :[null, 15 ] },
         { actual : [null, null, 34], expected :[null, null, 34 ] },
-        // TODO Start of a sequence, can calculate line of best fit at some point
-        { actual : [null, 15, 20], expected :[null, 15, 20] },
-        { actual : [null, null, 34, 36], expected :[null, null, 34, 36] },
+        // Start of a sequence, can calculate line of best fit at some point
+        { actual : [null, 15, 20], expected :[10, 15, 20] },
+        { actual : [null, null, 34, 36], expected :[30, 32, 34, 36] },
         // End of a sequence, can't calculate line of best fit
         { actual : [15, null], expected :[15, null] },
         { actual : [32, null, null], expected :[32, null, null] },
-        // TODO End of a sequence, can calculate line of best fit
-        { actual : [10, 15, null], expected :[10, 15, null] },
-        { actual : [30, 32, null, null], expected :[30, 32, null, null] },
+        // End of a sequence, can calculate line of best fit
+        { actual : [10, 15, null], expected :[10, 15, 20] },
+        { actual : [30, 32, null, null], expected :[30, 32, 34, 36] },
         // Some edge cases
         { actual : [10, null, 20, null, 30], expected :[10, 15, 20, 25, 30] },
         { actual : [null, null, null], expected :[null, null, null] }

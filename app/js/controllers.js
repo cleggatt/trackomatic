@@ -8,7 +8,7 @@ controller('SingleMeasurementCtrl', ['$scope', 'repo', function ($scope, repo) {
 
     $scope.add = function() {
 
-        var value = parseInt($scope.valueToAdd);
+        var value = parseFloat($scope.valueToAdd);
         if (_.isNaN(value)) {
             // TODO Present validation error if caused by invalid format/value
             value = undefined;

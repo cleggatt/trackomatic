@@ -24,7 +24,7 @@ factory('repo', ['clcStorage', function (storage) {
 
     repo.add = function(value) {
         // TODO Validate that value is numeric
-        var valueToStore = parseInt(value);
+        var valueToStore = parseFloat(value);
         if (!valueToStore) {
             valueToStore = null;
         }

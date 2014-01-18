@@ -5,10 +5,11 @@
   "license": "MIT",
   "dependencies": {
     "angular": "1.2.4",
+    "angular-bootstrap" : "0.10.0",
+    "angular-chromeapp-util": "https://github.com/cleggatt/angular-chromeapp-util.git",
     "lodash": "2.2.1",
     "jquery": "1.9.1",
-    "ng-google-chart": "git://github.com/bouil/angular-google-chart.git#0.0.6",
-    "angular-chromeapp-util": "https://github.com/cleggatt/angular-chromeapp-util.git"
+    "ng-google-chart": "git://github.com/bouil/angular-google-chart.git#0.0.6"
   },
   "exportsOverride": {
     "lodash": {

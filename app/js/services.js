@@ -110,4 +110,45 @@ factory('repo', ['clcStorage', function (storage) {
     });
 
     return repo;
-}]);
+}]).
+factory('bestFitProvider', function () {
+
+    return {
+        getInstance : function() {
+
+            var N = 0,
+                xsum = 0,
+                ysum = 0,
+                xysum = 0,
+                x2sum = 0,
+                y2sum = 0,
+                m = 0,
+                b= 0;
+
+            return {
+                add : function(x, y) {
+                    N++;
+                    xsum += x;
+                    ysum += y;
+                    xysum += (x * y);
+                    x2sum += (x * x);
+                    y2sum += (y * y);
+                },
+                done : function() {
+                    if (N < 2) {
+                        return false;
+                    }
+                    m = ((N * xysum) - (xsum * ysum)) / ((N * x2sum) - (xsum * xsum));
+                    b = ((x2sum * ysum) - (xsum * xysum)) / ((N * x2sum) -(xsum * xsum));
+                    return true;
+                },
+                getY : function(x) {
+                    if (N < 2) {
+                        return NaN;
+                    }
+                    return (m * x) + b;
+                }
+            };
+        }
+    };
+});

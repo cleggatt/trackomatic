@@ -26,7 +26,7 @@ controller('SingleMeasurementCtrl', ['$scope', 'repo', function ($scope, repo) {
 controller('AllMeasurementsCtrl', ['$scope', 'repo', function ($scope, repo) {
     $scope.measurements = repo.measurements;
 }]).
-controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
+controller('ChartCtrl', ['$scope', 'repo', 'bestFitProvider', function ($scope, repo, bestFitProvider) {
 
     var addMeasurement = function(rows, time, value, minLine, maxLine) {
         rows.push({ c: [
@@ -98,44 +98,7 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
         }
         // Have we encountered a non-null data value, and do we have non-null data values left.
         var processing = false;
-        // TODO Extract
-        var ctx = function() {
-            var N = 0,
-                xsum = 0,
-                ysum = 0,
-                xysum = 0,
-                x2sum = 0,
-                y2sum = 0,
-                m = 0,
-                b= 0;
-
-            var ctx = {
-                add : function(x, y) {
-                    N++;
-                    xsum += x;
-                    ysum += y;
-                    xysum += (x * y);
-                    x2sum += (x * x);
-                    y2sum += (y * y);
-                },
-                done : function() {
-                    if (N < 2) {
-                        return false;
-                    }
-                    m = ((N * xysum) - (xsum * ysum)) / ((N * x2sum) - (xsum * xsum));
-                    b = ((x2sum * ysum) - (xsum * xysum)) / ((N * x2sum) -(xsum * xsum));
-                    return true;
-                },
-                getY : function(x) {
-                    if (N < 2) {
-                        return NaN;
-                    }
-                    return (m * x) + b;
-                }
-            };
-
-            return ctx;
-        }();
+        var bestFit = bestFitProvider.getInstance();
         // Just update the entire array and let the googlecharts API handle working out what the change was
         var rows = [];
         for (var idx = 0; idx < measurements.length; idx++) {
@@ -155,7 +118,7 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
                         var increment = calculateIncrement(measurements, p1, p2);
                         for (var interpolated = base + increment; idx < p2; interpolated += increment, idx++) {
                             // TODO Need to make these unselectable with no hover detail
-                            ctx.add(idx, interpolated);
+                            bestFit.add(idx, interpolated);
                             addMeasurement(rows, measurements[idx].time, interpolated, repo.ideal.minimum, maxLine);
                         }
                         // Rollback index by one as outer loop will increment it
@@ -167,15 +130,15 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
                 processing = true;
             }
             if (measurement.value != null) {
-                ctx.add(idx, measurement.value);
+                bestFit.add(idx, measurement.value);
             }
             addMeasurement(rows, measurement.time, measurement.value, repo.ideal.minimum, maxLine);
         }
-        if (ctx.done()) {
+        if (bestFit.done()) {
             for (var idx = 0; idx < measurements.length; idx++) {
                 var measurement = measurements[idx];
                 if (measurement.value == null) {
-                    rows[idx].c[1].v = ctx.getY(idx);
+                    rows[idx].c[1].v = bestFit.getY(idx);
                 }
             }
         }

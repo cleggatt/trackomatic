@@ -76,69 +76,63 @@ controller('ChartCtrl', ['$scope', 'repo', 'bestFitProvider', function ($scope, 
         return increment;
     }
 
+
+
     // TODO Should put this in the parent scope of all controllers?
     $scope.repo = repo;
     $scope.$watch('repo.measurements', function() {
+        var rows = [];
         // The min/max series are stacked so the max line value needs to be the difference of max and min
         // TODO Handle undefined min or max
         var maxLine = repo.ideal.maximum - repo.ideal.minimum;
         var measurements = repo.measurements;
         if (measurements.length == 0) {
-            $scope.chart.data.rows = [
-                {c: [
-                    {v: null},
-                    {v: null},
-                    // TODO Need to make min unselectable with no hover details
-                    {v: repo.ideal.minimum},
-                    // TODO Need to make max unselectable with no hover details
-                    {v: maxLine}
-                ]}
-            ]
-            return;
-        }
-        // Have we encountered a non-null data value, and do we have non-null data values left.
-        var processing = false;
-        var bestFit = bestFitProvider.getInstance();
-        // Just update the entire array and let the googlecharts API handle working out what the change was
-        var rows = [];
-        for (var idx = 0; idx < measurements.length; idx++) {
-            var measurement = measurements[idx];
-            if (processing) {
-                if (measurement.value == null) {
-                    // Attempt to find the 2 points to use as the basis of our interpolation. Note, idx will never be 0 here
-                    var p1 = idx - 1;
-                    var p2 = findNextValueIndex(measurements, p1 + 1);
-                    // If we can't find a second point, we have run out of data
-                    if (p2 == measurements.length) {
-                        processing = false;
-                    } else {
-                        // Since we're assuming regular sampling, we use idx as the X value for interpolation. If we
-                        // were plotting time as X, we wouldn't need interpolation
-                        var base = measurements[p1].value;
-                        var increment = calculateIncrement(measurements, p1, p2);
-                        for (var interpolated = base + increment; idx < p2; interpolated += increment, idx++) {
-                            // TODO Need to make these unselectable with no hover detail
-                            bestFit.add(idx, interpolated);
-                            addMeasurement(rows, measurements[idx].time, interpolated, repo.ideal.minimum, maxLine);
-                        }
-                        // Rollback index by one as outer loop will increment it
-                        idx = idx - 1;
-                        continue;
-                    }
-                }
-            } else if (measurement.value != null) {
-                processing = true;
-            }
-            if (measurement.value != null) {
-                bestFit.add(idx, measurement.value);
-            }
-            addMeasurement(rows, measurement.time, measurement.value, repo.ideal.minimum, maxLine);
-        }
-        if (bestFit.done()) {
+            // Add a single dummy row to keep the charts library happy
+            addMeasurement(rows, null, null, repo.ideal.minimum, maxLine);
+        } else {
+            // Have we encountered a non-null data value, and do we have non-null data values left.
+            var processing = false;
+            var bestFit = bestFitProvider.getInstance();
+            // Just update the entire array and let the googlecharts API handle working out what the change was
             for (var idx = 0; idx < measurements.length; idx++) {
                 var measurement = measurements[idx];
-                if (measurement.value == null) {
-                    rows[idx].c[1].v = bestFit.getY(idx);
+                if (processing) {
+                    if (measurement.value == null) {
+                        // Attempt to find the 2 points to use as the basis of our interpolation. Note, idx will never be 0 here
+                        var p1 = idx - 1;
+                        var p2 = findNextValueIndex(measurements, p1 + 1);
+                        // If we can't find a second point, we have run out of data
+                        if (p2 == measurements.length) {
+                            processing = false;
+                        } else {
+                            // Since we're assuming regular sampling, we use idx as the X value for interpolation. If we
+                            // were plotting time as X, we wouldn't need interpolation
+                            var base = measurements[p1].value;
+                            var increment = calculateIncrement(measurements, p1, p2);
+                            for (var interpolated = base + increment; idx < p2; interpolated += increment, idx++) {
+                                // TODO Need to make these unselectable with no hover detail
+                                bestFit.add(idx, interpolated);
+                                addMeasurement(rows, measurements[idx].time, interpolated, repo.ideal.minimum, maxLine);
+                            }
+                            // Rollback index by one as outer loop will increment it
+                            idx = idx - 1;
+                            continue;
+                        }
+                    }
+                } else if (measurement.value != null) {
+                    processing = true;
+                }
+                if (measurement.value != null) {
+                    bestFit.add(idx, measurement.value);
+                }
+                addMeasurement(rows, measurement.time, measurement.value, repo.ideal.minimum, maxLine);
+            }
+            if (bestFit.done()) {
+                for (var idx = 0; idx < measurements.length; idx++) {
+                    var measurement = measurements[idx];
+                    if (measurement.value == null) {
+                        rows[idx].c[1].v = bestFit.getY(idx);
+                    }
                 }
             }
         }

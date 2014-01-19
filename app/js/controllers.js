@@ -76,24 +76,44 @@ controller('ChartCtrl', ['$scope', 'repo', 'bestFitProvider', function ($scope, 
         return increment;
     }
 
+    var insertInterpolatedPoints = function(measurements, startIdx, p1, p2, bestFit, rows, minLine, maxLine) {
+        // Since we're assuming regular sampling, we use the index of the value as the X value for interpolation. If we
+        // were plotting time as X, we wouldn't need interpolation
+        var base = measurements[p1].value;
+        var increment = calculateIncrement(measurements, p1, p2);
+        for (var idx = startIdx, interpolated = base + increment; idx < p2; interpolated += increment, idx++) {
+            // TODO Need to make these unselectable with no hover detail
+            bestFit.add(idx, interpolated);
+            addMeasurement(rows, measurements[idx].time, interpolated, minLine, maxLine);
+        }
+    }
 
+    var addLineOfBestFit = function(measurements, rows, bestFit) {
+        for (var idx = 0; idx < measurements.length; idx++) {
+            var measurement = measurements[idx];
+            if (measurement.value == null) {
+                rows[idx].c[1].v = bestFit.getY(idx);
+            }
+        }
+    }
 
     // TODO Should put this in the parent scope of all controllers?
     $scope.repo = repo;
     $scope.$watch('repo.measurements', function() {
+        // Just update the entire array and let the googlecharts API handle working out what the change was
         var rows = [];
         // The min/max series are stacked so the max line value needs to be the difference of max and min
         // TODO Handle undefined min or max
+        var minLine = repo.ideal.minimum;
         var maxLine = repo.ideal.maximum - repo.ideal.minimum;
         var measurements = repo.measurements;
         if (measurements.length == 0) {
             // Add a single dummy row to keep the charts library happy
             addMeasurement(rows, null, null, repo.ideal.minimum, maxLine);
         } else {
-            // Have we encountered a non-null data value, and do we have non-null data values left.
+            // Have we encountered a non-null data value, and do we have non-null data values left?
             var processing = false;
             var bestFit = bestFitProvider.getInstance();
-            // Just update the entire array and let the googlecharts API handle working out what the change was
             for (var idx = 0; idx < measurements.length; idx++) {
                 var measurement = measurements[idx];
                 if (processing) {
@@ -105,17 +125,9 @@ controller('ChartCtrl', ['$scope', 'repo', 'bestFitProvider', function ($scope, 
                         if (p2 == measurements.length) {
                             processing = false;
                         } else {
-                            // Since we're assuming regular sampling, we use idx as the X value for interpolation. If we
-                            // were plotting time as X, we wouldn't need interpolation
-                            var base = measurements[p1].value;
-                            var increment = calculateIncrement(measurements, p1, p2);
-                            for (var interpolated = base + increment; idx < p2; interpolated += increment, idx++) {
-                                // TODO Need to make these unselectable with no hover detail
-                                bestFit.add(idx, interpolated);
-                                addMeasurement(rows, measurements[idx].time, interpolated, repo.ideal.minimum, maxLine);
-                            }
+                            insertInterpolatedPoints(measurements, idx, p1, p2, bestFit, rows, repo.ideal.minimum, maxLine);
                             // Rollback index by one as outer loop will increment it
-                            idx = idx - 1;
+                            idx = p2 - 1;
                             continue;
                         }
                     }
@@ -128,16 +140,11 @@ controller('ChartCtrl', ['$scope', 'repo', 'bestFitProvider', function ($scope, 
                 addMeasurement(rows, measurement.time, measurement.value, repo.ideal.minimum, maxLine);
             }
             if (bestFit.done()) {
-                for (var idx = 0; idx < measurements.length; idx++) {
-                    var measurement = measurements[idx];
-                    if (measurement.value == null) {
-                        rows[idx].c[1].v = bestFit.getY(idx);
-                    }
-                }
+                addLineOfBestFit(measurements, rows, bestFit);
             }
         }
         $scope.chart.data.rows = rows;
-    },true);
+    }, true);
     $scope.$watch('repo.ideal', function() {
        if (repo.ideal.maximum > repo.ideal.minimum) {
            // TODO Handle undefined min or max

@@ -166,7 +166,49 @@ describe('ChartCtrl', function() {
         });
     });
 
-    it('updates measurementsAsRows values when repo measurements change', inject(function($rootScope, $controller, repo) {
+    it('initially creates an empty row of chart data', inject(function($rootScope, $controller) {
+        // Exercise
+        var scope = $rootScope.$new(),
+            ctrl = $controller("ChartCtrl", { $scope: scope });
+        // Verify
+        expect(scope.chart.data.rows).toEqual([
+            { c: [ {v: null}, {v: null}, {v: null}, {v: null} ] }
+        ]);
+    }));
+
+    it('sets an action on the chartWrapper on initial onReady() call', inject(function($rootScope, $controller) {
+        // Set up
+        var chart = jasmine.createSpyObj('chart', ['setAction']);
+        var chartWrapper = jasmine.createSpyObj('chartWrapper', ['getChart']);
+        chartWrapper.getChart.andCallFake(function() { return chart; });
+
+        var scope = $rootScope.$new(),
+            ctrl = $controller("ChartCtrl", { $scope: scope });
+        scope.$apply();
+        // Exercise
+        scope.onReady(chartWrapper);
+        // Verify
+        expect(chart.setAction).toHaveBeenCalled();
+    }));
+
+    it('does not set an action on the chartWrapper on subsequent onReady() calls', inject(function($rootScope, $controller) {
+        // Set up
+        var chart = jasmine.createSpyObj('chart', ['setAction']);
+        var chartWrapper = jasmine.createSpyObj('chartWrapper', ['getChart']);
+        chartWrapper.getChart.andCallFake(function() { return chart; });
+
+        var scope = $rootScope.$new(),
+            ctrl = $controller("ChartCtrl", { $scope: scope });
+        scope.$apply();
+        // Exercise
+        scope.onReady(chartWrapper);
+        scope.onReady(chartWrapper);
+        scope.onReady(chartWrapper);
+        // Verify
+        expect(chart.setAction.callCount).toBe(1);
+    }));
+
+    it('updates data rows when repo measurements change', inject(function($rootScope, $controller, repo) {
         // Set up
         var scope = $rootScope.$new(),
             ctrl = $controller("ChartCtrl", { $scope: scope });
@@ -178,6 +220,20 @@ describe('ChartCtrl', function() {
         expect(scope.chart.data.rows).toEqual([
             { c: [ {v: 1}, {v: 13}, {v: 10}, {v: 10} ] },
             { c: [ {v: 2}, {v: 42}, {v: 10}, {v: 10}  ] }
+        ]);
+    }));
+
+    it('creates an empty row of chart data (with ideals) when repo are cleared', inject(function($rootScope, $controller, repo) {
+        // Set up
+        var scope = $rootScope.$new(),
+            ctrl = $controller("ChartCtrl", { $scope: scope });
+        scope.$apply();
+        // Exercise
+        repo.measurements.length = 0;
+        scope.$apply();
+        // Verify
+        expect(scope.chart.data.rows).toEqual([
+            { c: [ {v: null}, {v: null}, {v: 10}, {v: 10} ] }
         ]);
     }));
 

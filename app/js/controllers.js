@@ -28,8 +28,8 @@ controller('AllMeasurementsCtrl', ['$scope', 'repo', function ($scope, repo) {
 }]).
 controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
 
-    var addMeasurement = function(measurementsAsRows, time, value, minLine, maxLine) {
-        measurementsAsRows.push({ c: [
+    var addMeasurement = function(rows, time, value, minLine, maxLine) {
+        rows.push({ c: [
             {v: time},
             {v: value },
             // TODO Handle undefined min
@@ -76,16 +76,26 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
         return increment;
     }
 
-    var measurementsAsRows = [];
-    var ourChartWrapper;
-
     // TODO Should put this in the parent scope of all controllers?
     $scope.repo = repo;
     $scope.$watch('repo.measurements', function() {
-        // TODO Handle undefined min or max
         // The min/max series are stacked so the max line value needs to be the difference of max and min
+        // TODO Handle undefined min or max
         var maxLine = repo.ideal.maximum - repo.ideal.minimum;
         var measurements = repo.measurements;
+        if (measurements.length == 0) {
+            $scope.chart.data.rows = [
+                {c: [
+                    {v: null},
+                    {v: null},
+                    // TODO Need to make min unselectable with no hover details
+                    {v: repo.ideal.minimum},
+                    // TODO Need to make max unselectable with no hover details
+                    {v: maxLine}
+                ]}
+            ]
+            return;
+        }
         // Have we encountered a non-null data value, and do we have non-null data values left.
         var processing = false;
         // TODO Extract
@@ -127,7 +137,7 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
             return ctx;
         }();
         // Just update the entire array and let the googlecharts API handle working out what the change was
-        measurementsAsRows.length = 0;
+        var rows = [];
         for (var idx = 0; idx < measurements.length; idx++) {
             var measurement = measurements[idx];
             if (processing) {
@@ -146,7 +156,7 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
                         for (var interpolated = base + increment; idx < p2; interpolated += increment, idx++) {
                             // TODO Need to make these unselectable with no hover detail
                             ctx.add(idx, interpolated);
-                            addMeasurement(measurementsAsRows, measurements[idx].time, interpolated, repo.ideal.minimum, maxLine);
+                            addMeasurement(rows, measurements[idx].time, interpolated, repo.ideal.minimum, maxLine);
                         }
                         // Rollback index by one as outer loop will increment it
                         idx = idx - 1;
@@ -156,53 +166,58 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
             } else if (measurement.value != null) {
                 processing = true;
             }
-           if (measurement.value != null) {
-               ctx.add(idx, measurement.value);
-           }
-            addMeasurement(measurementsAsRows, measurement.time, measurement.value, repo.ideal.minimum, maxLine);
+            if (measurement.value != null) {
+                ctx.add(idx, measurement.value);
+            }
+            addMeasurement(rows, measurement.time, measurement.value, repo.ideal.minimum, maxLine);
         }
         if (ctx.done()) {
             for (var idx = 0; idx < measurements.length; idx++) {
                 var measurement = measurements[idx];
                 if (measurement.value == null) {
-                    measurementsAsRows[idx].c[1].v = ctx.getY(idx);
+                    rows[idx].c[1].v = ctx.getY(idx);
                 }
             }
         }
+        $scope.chart.data.rows = rows;
     },true);
     $scope.$watch('repo.ideal', function() {
        if (repo.ideal.maximum > repo.ideal.minimum) {
            // TODO Handle undefined min or max
             // The min/max series are stacked so the max line value needs to be the difference of max and min
             var maxLine = repo.ideal.maximum - repo.ideal.minimum;
-            for (var i = 0; i < measurementsAsRows.length; i++) {
+            for (var i = 0; i < $scope.chart.data.rows.length; i++) {
                 // TODO Need to make min unselectable with no hover details
-                measurementsAsRows[i].c[2].v = repo.ideal.minimum;
+                $scope.chart.data.rows[i].c[2].v = repo.ideal.minimum;
                 // TODO Need to make max unselectable with no hover details
-                measurementsAsRows[i].c[3].v = maxLine;
+                $scope.chart.data.rows[i].c[3].v = maxLine;
             }
        }
     }, true);
 
-    $scope.onReady = function(chartwrapper) {
-        ourChartWrapper = chartwrapper;
-        ourChartWrapper.getChart().setAction({
-            id: 'remove',
-            text: 'Remove',
-            action: function() {
-                // TODO If we can't make the ideal lines unselectable, ignore here
-                var selections = ourChartWrapper.getChart().getSelection();
-                if (selections.length) {
-                    var selection = selections[0];
-                    if (selection.row) {
-                        $scope.$apply(function(scope) {
-                            // TODO Do nothing for value averaged for nulls
-                            repo.remove(selection.row);
-                        });
+    var ourChartWrapper;
+    $scope.onReady = function(chartWrapper) {
+        // On ready is called every when the chart is ready to interact with after changes
+        if (ourChartWrapper !== chartWrapper) {
+            ourChartWrapper = chartWrapper;
+            ourChartWrapper.getChart().setAction({
+                id: 'remove',
+                text: 'Remove',
+                action: function() {
+                    // TODO If we can't make the ideal lines unselectable, ignore here
+                    var selections = ourChartWrapper.getChart().getSelection();
+                    if (selections.length) {
+                        var selection = selections[0];
+                        if (selection.row) {
+                            $scope.$apply(function(scope) {
+                                // TODO Do nothing for value averaged for nulls
+                                repo.remove(selection.row);
+                            });
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     };
 
     $scope.chart = {
@@ -214,6 +229,7 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
                 {
                     "id": "time",
                     "label": "Time",
+                    // TODO This is actually a number
                     "type": "string"
                 },
                 {
@@ -234,7 +250,15 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
                     "type": "number"
                 }
             ],
-            "rows": measurementsAsRows
+            // We'll overwrite this (with ideals) as soon as the repo has loaded
+            "rows": [
+                {c: [
+                    {v: null},
+                    {v: null},
+                    {v: null},
+                    {v: null}
+                ]}
+            ]
         },
         "options": {
             seriesType: "line",
@@ -248,12 +272,12 @@ controller('ChartCtrl', ['$scope', 'repo', function ($scope, repo) {
             "hAxis": {
                 "title": "Time"
             },
-            // TODO This value should be set to ensure the lowest value is visible
-            "vAxis": {
-                "viewWindow":  {
-                    "min" : 60
-                }
-            },
+            // FIXME This value should be set to ensure some value is visible (the chart library will fail otherwise)
+//            "vAxis": {
+//                "viewWindow":  {
+//                    "min" : 60
+//                }
+//            },
             animation:{
                 duration: 1000,
                 easing: 'inAndOut'

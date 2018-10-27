@@ -114,7 +114,7 @@ factory('repo', ['clcStorage', function (storage) {
 factory('bestFitProvider', function () {
 
     return {
-        getInstance : function() {
+        newInstance : function() {
 
             var N = 0,
                 xsum = 0,

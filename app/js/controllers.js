@@ -109,11 +109,11 @@ controller('ChartCtrl', ['$scope', 'repo', 'bestFitProvider', function ($scope, 
         var measurements = repo.measurements;
         if (measurements.length == 0) {
             // Add a single dummy row to keep the charts library happy
-            addMeasurement(rows, null, null, repo.ideal.minimum, maxLine);
+            addMeasurement(rows, null, null, minLine, maxLine);
         } else {
             // Have we encountered a non-null data value, and do we have non-null data values left?
             var processing = false;
-            var bestFit = bestFitProvider.getInstance();
+            var bestFit = bestFitProvider.newInstance();
             for (var idx = 0; idx < measurements.length; idx++) {
                 var measurement = measurements[idx];
                 if (processing) {
@@ -125,7 +125,7 @@ controller('ChartCtrl', ['$scope', 'repo', 'bestFitProvider', function ($scope, 
                         if (p2 == measurements.length) {
                             processing = false;
                         } else {
-                            insertInterpolatedPoints(measurements, idx, p1, p2, bestFit, rows, repo.ideal.minimum, maxLine);
+                            insertInterpolatedPoints(measurements, idx, p1, p2, bestFit, rows, minLine, maxLine);
                             // Rollback index by one as outer loop will increment it
                             idx = p2 - 1;
                             continue;
@@ -137,7 +137,7 @@ controller('ChartCtrl', ['$scope', 'repo', 'bestFitProvider', function ($scope, 
                 if (measurement.value != null) {
                     bestFit.add(idx, measurement.value);
                 }
-                addMeasurement(rows, measurement.time, measurement.value, repo.ideal.minimum, maxLine);
+                addMeasurement(rows, measurement.time, measurement.value, minLine, maxLine);
             }
             if (bestFit.done()) {
                 addLineOfBestFit(measurements, rows, bestFit);

@@ -16,7 +16,10 @@
             background-color: rgba(86,61,124,.15);
             border: 1px solid rgba(86,61,124,.2);
         }
-
+        .data-entry {
+            overflow-y: scroll;
+            height: 350px;
+        }
     </style>
 </head>
 <body>
@@ -38,7 +41,8 @@
                     </div>
                 </form>
                 <div ng-show="showDataEntry" >
-                    <ul class="list-unstyled">
+                    <!-- TODO Make this scroll to match the available area -->
+                    <ul class="list-unstyled data-entry">
                         <li ng-repeat='m in measurements'>
                             {{m.time}}: {{m.value}} <button type="button" class="btn btn-danger btn-xs" ng-click='remove($index)' >X</button>
                         </li>
@@ -68,6 +72,7 @@
                     {{ showRawData ? 'Hide' : 'Show' }} raw data
                 </button><br/>
             </div>
+            <!-- TODO Make the data selectable -->
             <div class="col-md-12" ng-controller='AllMeasurementsCtrl' ng-show="showRawData">
                 <pre class=".pre-scrollable">{{measurements}}</pre>
             </div>
